@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SalonFlow — Dashboard</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f6f8;
+            color: #202124;
+        }
+        header {
+            background: #111827;
+            color: white;
+            padding: 18px 24px;
+        }
+        header h1 { margin: 0; font-size: 22px; }
+        header p { margin: 5px 0 0; opacity: .75; }
+        main { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.05);
+        }
+        .stat-number { font-size: 30px; font-weight: bold; margin-top: 5px; }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+        h2 { margin-top: 0; font-size: 18px; }
+        form { display: grid; gap: 9px; }
+        input, select, textarea, button {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d5d9df;
+            border-radius: 8px;
+            font: inherit;
+        }
+        button {
+            background: #111827;
+            color: white;
+            border: 0;
+            cursor: pointer;
+        }
+        button:hover { opacity: .9; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        th, td {
+            padding: 11px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+            font-size: 14px;
+        }
+        .wide { grid-column: 1 / -1; }
+        .status-form { display: flex; gap: 6px; }
+        .status-form select { min-width: 130px; }
+        .status-form button { width: auto; }
+        .muted { color: #6b7280; font-size: 13px; }
+        @media (max-width: 800px) {
+            .stats { grid-template-columns: 1fr 1fr; }
+            .grid { grid-template-columns: 1fr; }
+            .wide { grid-column: auto; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>SalonFlow</h1>
+    <p>WhatsApp booking SaaS — local MVP</p>
+</header>
+
+<main>
+    <div class="stats">
+        <div class="card">
+            <div class="muted">Customers</div>
+            <div class="stat-number">{{ stats.customers }}</div>
+        </div>
+        <div class="card">
+            <div class="muted">Today's appointments</div>
+            <div class="stat-number">{{ stats.today }}</div>
+        </div>
+        <div class="card">
+            <div class="muted">Confirmed today</div>
+            <div class="stat-number">{{ stats.confirmed }}</div>
+        </div>
+        <div class="card">
+            <div class="muted">Pending today</div>
+            <div class="stat-number">{{ stats.pending }}</div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <section class="card">
+            <h2>Add Customer</h2>
+            <form method="post" action="/customers">
+                <input name="name" placeholder="Customer name" required>
+                <input name="phone" placeholder="Phone / WhatsApp number" required>
+                <textarea name="notes" placeholder="Notes"></textarea>
+                <button type="submit">Add customer</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Add Service</h2>
+            <form method="post" action="/services">
+                <input name="name" placeholder="Service name" required>
+                <input name="duration" type="number" min="5" value="30" placeholder="Duration in minutes">
+                <input name="price" type="number" min="0" step="0.01" value="199" placeholder="Price">
+                <button type="submit">Add service</button>
+            </form>
+        </section>
+
+        <section class="card wide">
+            <h2>New Appointment</h2>
+            <form method="post" action="/appointments">
+                <select name="customer_id" required>
+                    <option value="">Select customer</option>
+                    {% for c in customers %}
+                    <option value="{{ c.id }}">{{ c.name }} — {{ c.phone }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="service_id" required>
+                    <option value="">Select service</option>
+                    {% for s in services %}
+                    <option value="{{ s.id }}">{{ s.name }} — ₹{{ "%.0f"|format(s.price) }}</option>
+                    {% endfor %}
+                </select>
+
+                <input type="date" name="appointment_date" value="{{ today }}" required>
+                <input type="time" name="appointment_time" required>
+                <textarea name="notes" placeholder="Appointment notes"></textarea>
+                <button type="submit">Create appointment</button>
+            </form>
+        </section>
+
+        <section class="card wide">
+            <h2>Today's Appointments — {{ today }}</h2>
+
+            {% if appointments %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Customer</th>
+                        <th>Phone</th>
+                        <th>Service</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for a in appointments %}
+                    <tr>
+                        <td>{{ a.appointment_time }}</td>
+                        <td>{{ a.customer_name }}</td>
+                        <td>{{ a.phone }}</td>
+                        <td>{{ a.service_name }}</td>
+                        <td>{{ a.status }}</td>
+                        <td>
+                            <form class="status-form" method="post"
+                                  action="/appointments/{{ a.id }}/status">
+                                <select name="status">
+                                    {% for st in ["pending", "confirmed", "completed", "cancelled", "no_show"] %}
+                                    <option value="{{ st }}" {% if a.status == st %}selected{% endif %}>
+                                        {{ st }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p class="muted">No appointments for today.</p>
+            {% endif %}
+        </section>
+    </div>
+</main>
+</body>
+</html>
