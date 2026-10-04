@@ -1,26 +1,32 @@
 # SalonFlow MVP
 
-A small local MVP for a salon appointment/WhatsApp automation SaaS.
+**WhatsApp-based appointment booking assistant for salons — FastAPI + SQLite MVP.**
 
-## What it does
+## The problem
 
-- Customer management
-- Service management
-- Appointment creation
-- Appointment conflict checking
-- Appointment status updates
-- Basic availability API
-- JSON API endpoints ready for future WhatsApp integration
-- SQLite database
-- Simple responsive dashboard
+Salons lose bookings when customers can't reach the front desk — missed calls, no-shows, and manual scheduling eat up staff time. SalonFlow is an MVP backend exploring automated appointment booking through WhatsApp-style conversational flows.
 
-## Requirements
+## Key features
 
-Python 3.10+ recommended.
+- Customer and service management
+- Appointment creation with conflict checking
+- Appointment status updates (e.g. confirmed, cancelled)
+- Availability and booking JSON APIs, structured for future WhatsApp integration
+- Simple responsive web dashboard
+- Interactive API docs via FastAPI/Swagger
 
-## Run on Windows
+## Tech stack
 
-Open PowerShell in this folder:
+- Python 3.10+, FastAPI
+- SQLite
+- Uvicorn
+- Plain HTML/CSS dashboard
+
+## Run locally
+
+Requirements: Python 3.10+ recommended.
+
+**Windows** (PowerShell, from this folder):
 
 ```powershell
 python -m venv .venv
@@ -29,19 +35,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-Then open:
-
-http://127.0.0.1:8000
-
-API documentation:
-
-http://127.0.0.1:8000/docs
-
-Health check:
-
-http://127.0.0.1:8000/health
-
-## Run on Linux/macOS
+**Linux/macOS:**
 
 ```bash
 python3 -m venv .venv
@@ -50,47 +44,16 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-## Important
+Then open:
 
-This is an MVP, not a production SaaS.
+- Dashboard: http://127.0.0.1:8000
+- API docs: http://127.0.0.1:8000/docs
+- Health check: http://127.0.0.1:8000/health
 
-Before accepting real customers, add:
+## Project status
 
-- User/business authentication
-- Tenant isolation
-- HTTPS
-- Production database
-- Backups
-- Rate limiting
-- Payment/subscription handling
-- WhatsApp Business Cloud API integration
-- Webhook signature verification
-- Message usage limits
-- Proper logging/monitoring
-- Privacy policy and terms
-- Secure secrets management
+This is an **MVP/demo**, not a production SaaS. It runs locally with a SQLite database and has no authentication, multi-tenant isolation, payments, or production hardening.
 
-## Planned production architecture
+WhatsApp integration is **planned but not live** — the API is structured to support a WhatsApp Business Cloud API webhook later (webhook signature verification, message usage limits, and secrets handling would need to be added first).
 
-Frontend:
-S3 + CloudFront
-
-Backend:
-API Gateway + Lambda
-
-Database:
-DynamoDB
-
-AI:
-Amazon Bedrock
-
-Messaging:
-WhatsApp Business Cloud API
-
-Files:
-S3
-
-Monitoring:
-CloudWatch
-
-Do not put AWS credentials or WhatsApp access tokens into source code.
+⚠️ Do not put AWS credentials or WhatsApp access tokens into source code.
